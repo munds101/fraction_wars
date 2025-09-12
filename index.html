@@ -25,7 +25,11 @@
             padding: 10px 20px;
             font-size: 1em;
             cursor: pointer;
-            margin-top: 20px;
+            margin: 10px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
         .result {
             margin-top: 20px;
@@ -46,7 +50,8 @@
         <div id="fraction2"></div>
     </div>
     
-    <button onclick="compareFractions()">Check which is bigger</button>
+    <button id="checkBtn" onclick="compareFractions()">Check which is bigger</button>
+    <button id="nextBtn" onclick="displayFractions()" disabled>Next Round</button>
     
     <div class="result" id="result"></div>
     
@@ -60,6 +65,10 @@
         let score1 = 0;
         let score2 = 0;
 
+        // Global fraction storage
+        let currentFraction1;
+        let currentFraction2;
+
         // Function to generate a random fraction less than 1 (denominator > numerator)
         function generateRandomFraction() {
             let denominator = Math.floor(Math.random() * 10) + 2; // Denominator (2-10)
@@ -67,47 +76,49 @@
             return { numerator: numerator, denominator: denominator, value: numerator / denominator };
         }
 
-        // Function to display the fractions for both players
+        // Function to display new fractions for both players
         function displayFractions() {
-            let fraction1 = generateRandomFraction();
-            let fraction2 = generateRandomFraction();
+            currentFraction1 = generateRandomFraction();
+            currentFraction2 = generateRandomFraction();
 
             // Display fractions as numerators/denominators
-            document.getElementById('fraction1').innerHTML = `${fraction1.numerator} / ${fraction1.denominator}`;
-            document.getElementById('fraction2').innerHTML = `${fraction2.numerator} / ${fraction2.denominator}`;
+            document.getElementById('fraction1').innerHTML = `${currentFraction1.numerator} / ${currentFraction1.denominator}`;
+            document.getElementById('fraction2').innerHTML = `${currentFraction2.numerator} / ${currentFraction2.denominator}`;
             
-            return { fraction1, fraction2 };
+            // Clear previous result
+            document.getElementById('result').innerHTML = "";
+
+            // Enable "Check", disable "Next Round"
+            document.getElementById('checkBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = true;
         }
 
         // Function to compare the fractions and update scores
         function compareFractions() {
-            let { fraction1, fraction2 } = displayFractions();
-            
-            // Compare fractions by their values
             let result = '';
-            let biggerFraction = '';
             let winningPlayer = '';
-            
-            if (fraction1.value > fraction2.value) {
+
+            if (currentFraction1.value > currentFraction2.value) {
                 score1++;
-                result = `Player 1's fraction (${fraction1.numerator}/${fraction1.denominator}) is bigger.`;
+                result = `Player 1's fraction (${currentFraction1.numerator}/${currentFraction1.denominator}) is bigger.`;
                 winningPlayer = 'Player 1';
-            } else if (fraction2.value > fraction1.value) {
+            } else if (currentFraction2.value > currentFraction1.value) {
                 score2++;
-                result = `Player 2's fraction (${fraction2.numerator}/${fraction2.denominator}) is bigger.`;
+                result = `Player 2's fraction (${currentFraction2.numerator}/${currentFraction2.denominator}) is bigger.`;
                 winningPlayer = 'Player 2';
             } else {
-                result = `Both fractions are equal (${fraction1.numerator}/${fraction1.denominator}).`;
+                result = `Both fractions are equal (${currentFraction1.numerator}/${currentFraction1.denominator}).`;
                 winningPlayer = 'No one';
             }
-            
-            // Update the result and scores
+
+            // Update the result and scores on the page
             document.getElementById('result').innerHTML = `${result} ${winningPlayer} wins!`;
             document.getElementById('score1').innerText = score1;
             document.getElementById('score2').innerText = score2;
-            
-            // Display an alert with the comparison result
-            alert(`${result} ${winningPlayer} wins!`);
+
+            // Disable "Check", enable "Next Round"
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
         }
 
         // Initialize the game
@@ -115,3 +126,4 @@
     </script>
 </body>
 </html>
+
