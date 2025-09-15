@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integers Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Navbar styling */
+    .topnav {
+      overflow: hidden;
+      background-color: #333;
+    }
+    .topnav a {
+      float: left;
+      display: block;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+    }
+    .topnav a.active {
+      background-color: #04AA6D;
+      color: white;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+    #problem {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    input {
+      font-size: 1em;
+      padding: 5px;
+      width: 60px;
+      text-align: center;
+    }
+    button {
+      font-size: 1em;
+      padding: 5px 15px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #feedback {
+      font-size: 1.2em;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    #score {
+      font-size: 1.5em;
+      margin: 15px 0;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="topnav">
+    <a href="index.html">Fraction Wars</a>
+    <a class="active" href="integers.html">Integers</a>
+    <a href="#contact">Contact</a>
+    <a href="#about">About</a>
+  </div>
+
+  <h1>Integer Addition Practice</h1>
+
+  <div id="problem"></div>
+  <input type="number" id="answer" />
+  <button onclick="checkAnswer()">Submit</button>
+  <button onclick="newProblem()">New Problem</button>
+
+  <div id="feedback"></div>
+  <div id="score">Score: <span id="scoreValue">0</span></div>
+
+  <h3>Reference Number Line (-20 to 20)</h3>
+  <canvas id="staticLine" width="800" height="80"></canvas>
+
+  <h3>Animated Solution</h3>
+  <canvas id="numberline" width="800" height="200"></canvas>
+
+  <script>
+    let num1, num2, correctAnswer;
+    let score = 0;
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function newProblem() {
+      num1 = randomInt(-10, 10);
+      num2 = randomInt(-10, 10);
+      correctAnswer = num1 + num2;
+
+      document.getElementById("problem").innerText = `${num1} + ${num2} = ?`;
+      document.getElementById("answer").value = "";
+      document.getElementById("feedback").innerText = "";
+
+      clearCanvas();
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      if (isNaN(userAnswer)) {
+        document.getElementById("feedback").innerText = "Please enter a number!";
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        score++;
+        document.getElementById("feedback").innerText = "✅ Correct!";
+      } else {
+        document.getElementById("feedback").innerText = `❌ Wrong! The correct answer is ${correctAnswer}`;
+      }
+
+      document.getElementById("scoreValue").innerText = score;
+
+      drawAnimatedSteps(num1, num2);
+    }
+
+    function clearCanvas() {
+      const canvas = document.getElementById("numberline");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawNumberLineBase(canvasId, labelTicks = true) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+
+      const originX = width / 2;
+      const scale = 18; // scale adjusted so -20 to +20 fits nicely
+
+      // Draw line
+      ctx.beginPath();
+      ctx.moveTo(20, height / 2);
+      ctx.lineTo(width - 20, height / 2);
+      ctx.stroke();
+
+      // Draw ticks and labels
+      for (let i = -20; i <= 20; i++) {
+        const x = originX + i * scale;
+        ctx.moveTo(x, height / 2 - 5);
+        ctx.lineTo(x, height / 2 + 5);
+        ctx.stroke();
+        if (labelTicks) {
+          ctx.fillText(i, x - 5, height / 2 + 20);
+        }
+      }
+    }
+
+    function drawAnimatedSteps(start, step) {
+      const canvas = document.getElementById("numberline");
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+
+      const originX = width / 2;
+      const scale = 18; // same scale as base
+
+      clearCanvas();
+      drawNumberLineBase("numberline");
+
+      let current = start;
+      let steps = Math.abs(step);
+      let direction = step >= 0 ? 1 : -1;
+      let count = 0;
+
+      // Draw starting point
+      ctx.fillStyle = "blue";
+      ctx.beginPath();
+      ctx.arc(originX + start * scale, height / 2, 5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      function animate() {
+        if (count < steps) {
+          let fromX = originX + current * scale;
+          current += direction;
+          let toX = originX + current * scale;
+
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(fromX, height / 2 - 10);
+          ctx.lineTo(toX, height / 2 - 10);
+          ctx.stroke();
+
+          // Arrowhead
+          ctx.beginPath();
+          ctx.moveTo(toX, height / 2 - 10);
+          ctx.lineTo(toX - direction * 6, height / 2 - 15);
+          ctx.lineTo(toX - direction * 6, height / 2 - 5);
+          ctx.closePath();
+          ctx.fillStyle = "red";
+          ctx.fill();
+
+          count++;
+          setTimeout(animate, 300); // 0.3s per step
+        } else {
+          // Final point
+          ctx.fillStyle = "green";
+          ctx.beginPath();
+          ctx.arc(originX + current * scale, height / 2, 6, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+
+      animate();
+    }
+
+    // Draw static reference number line
+    function drawStaticLine() {
+      drawNumberLineBase("staticLine", true);
+    }
+
+    // Start with a problem
+    newProblem();
+    drawStaticLine();
+  </script>
+</body>
+</html>
